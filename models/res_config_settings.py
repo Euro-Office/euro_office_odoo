@@ -3,6 +3,8 @@
 #
 
 from odoo import api, fields, models
+from odoo.exceptions import AccessError
+from odoo.tools.translate import _
 
 from odoo.addons.euro_office_odoo.utils import config_utils, validation_utils
 
@@ -28,6 +30,11 @@ class ResConfigSettings(models.TransientModel):
 
     @api.model
     def save_config_values(self):
+        # @api.model methods are RPC-callable by any authenticated user,
+        # and every value written here (document server URL, JWT secret,
+        # certificate verification, demo mode) is security-relevant.
+        if not self.env.user.has_group("base.group_system"):
+            raise AccessError(_("Only administrators can save Euro-Office connector settings."))
         if validation_utils.valid_url(self.doc_server_public_url):
             config_utils.set_doc_server_public_url(self.env, self.doc_server_public_url)
         if validation_utils.valid_url(self.doc_server_odoo_url):
