@@ -19,7 +19,7 @@ from odoo import _, fields, http
 from odoo.exceptions import AccessError, UserError
 from odoo.http import request
 
-from odoo.addons.euro_office_odoo.utils import config_utils, file_utils, jwt_utils, url_utils
+from odoo.addons.euro_office_odoo.utils import config_utils, file_utils, json_utils, jwt_utils, url_utils
 
 _logger = logging.getLogger(__name__)
 _mobile_regex = r"android|avantgo|playbook|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od|ad)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\\/|plucker|pocket|psp|symbian|treo|up\\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino"  # noqa: E501
@@ -328,7 +328,7 @@ class EuroOffice_Connector(http.Controller):
             "docTitle": filename,
             "docIcon": f"/euro_office_odoo/static/description/editor_icons/{document_type}.ico",
             "docApiJS": docserver_url + "web-apps/apps/api/documents/api.js",
-            "editorConfig": markupsafe.Markup(json.dumps(root_config)),
+            "editorConfig": markupsafe.Markup(json_utils.dump_for_inline_script(root_config)),
         }
 
     def get_documents_permissions(self, attachment, can_write, root_config):  # noqa: C901
@@ -492,7 +492,7 @@ class EuroOffice_Connector(http.Controller):
                 "docTitle": title,
                 "docIcon": f"/euro_office_odoo/static/description/editor_icons/{document_type}.ico",
                 "docApiJS": docserver_url + "web-apps/apps/api/documents/api.js",
-                "editorConfig": markupsafe.Markup(json.dumps(root_config)),
+                "editorConfig": markupsafe.Markup(json_utils.dump_for_inline_script(root_config)),
             },
         )
 
