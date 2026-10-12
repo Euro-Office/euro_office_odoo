@@ -27,6 +27,7 @@ _mobile_regex = r"android|avantgo|playbook|blackberry|blazer|compal|elaine|fenne
 
 def euro_office_urlopen(url, timeout=120, context=None):
     url = url_utils.replace_public_url_to_internal(request.env, url)
+    url_utils.validate_public_http_url(request.env, url, allow_document_server=True, allow_odoo_base=True)
     cert_verify_disabled = config_utils.get_certificate_verify_disabled(request.env)
 
     if cert_verify_disabled and url.startswith("https://"):
@@ -458,6 +459,14 @@ class EuroOffice_Connector(http.Controller):
 
         if url and not url.startswith(("http://", "https://")):
             url = odoo_url.rstrip("/") + "/" + url.lstrip("/")
+
+        try:
+            url_utils.validate_public_http_url(
+                request.env, url, allow_document_server=True, allow_odoo_base=True
+            )
+        except url_utils.InvalidURLError:
+            _logger.warning("GET /euro_office/preview - rejected url: %s", url)
+            raise Forbidden("URL is not allowed for preview")
 
         document_type = file_utils.get_file_type(title)
         key = str(int(time.time() * 1000))
