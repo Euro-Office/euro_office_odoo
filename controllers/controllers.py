@@ -146,8 +146,10 @@ class EuroOffice_Connector(http.Controller):
             _logger.warning("GET /euro_office/file/content/%s - attachment not found", attachment_id)
             return request.not_found()
 
-        attachment._can_return_content(access_token=access_token)
-        attachment.has_access("read")
+        if not attachment._can_return_content(access_token=access_token):
+            raise Forbidden()
+        if not attachment.has_access("read"):
+            raise Forbidden()
 
         if jwt_utils.is_jwt_enabled(request.env):
             token = request.httprequest.headers.get(config_utils.get_jwt_header(request.env))
@@ -212,7 +214,8 @@ class EuroOffice_Connector(http.Controller):
                 raise Exception("attachment not found")
 
             attachment._can_return_content(access_token=access_token)
-            attachment.has_access("write")
+            if not attachment.has_access("write"):
+                raise Forbidden()
 
             if jwt_utils.is_jwt_enabled(request.env):
                 token = body.get("token")
